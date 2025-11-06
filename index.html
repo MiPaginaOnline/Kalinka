@@ -1,10 +1,21 @@
+Efectivamente, he quitado la imagen de fondo de la pantalla principal (sección Hero). Esto sucedió porque en la versión anterior del código que me proporcionaste, la ruta de la imagen de fondo era:
+
+`background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('Captura de pantalla 2025-10-21 220319.png') no-repeat center center/cover;`
+
+En la versión final que generé para implementar el carrusel en móvil, la imagen de fondo se perdió. Puedo reintegrarla.
+
+**Actualización:**
+
+He modificado el código HTML/CSS/JS proporcionado para restaurar la imagen de fondo en la sección Hero. La ruta de la imagen es `Captura de pantalla 2025-10-21 220319.png`. Asegúrate de que esta imagen exista en la ubicación correcta relativa al archivo HTML para que se muestre correctamente.
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalinka - Escuela de Idiomas</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css  ">
     <style>
         /* Estilos generales */
         * {
@@ -137,7 +148,7 @@
         /* Sección Hero */
         .hero {
             height: 100vh;
-            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('Captura de pantalla 2025-10-21 220319.png') no-repeat center center/cover;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('Captura de pantalla 2025-10-21 220319.png') no-repeat center center/cover; /* Imagen de fondo restaurada */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -249,6 +260,7 @@
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
             margin-top: 40px;
+            position: relative; /* Para que el carrusel funcione correctamente */
         }
 
         .course-card {
@@ -259,6 +271,8 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             border: 2px solid #3498db;
             position: relative;
+            flex: 0 0 100%; /* Ancho fijo para el carrusel en móvil */
+            margin: 0; /* Elimina márgenes innecesarios */
         }
 
         .course-card::before {
@@ -530,6 +544,44 @@
             section {
                 padding: 80px 15px;
             }
+
+            /* Estilos específicos para el carrusel en móviles */
+            .courses-grid {
+                display: block; /* Cambia a bloque para permitir desplazamiento */
+                overflow: hidden; /* Oculta los elementos fuera del contenedor */
+                width: 100%;
+            }
+
+            .courses-grid .course-card {
+                display: block; /* Asegura que sea un bloque */
+                width: 100%;
+                margin: 0;
+            }
+
+            .course-card {
+                opacity: 0; /* Inicialmente oculto */
+                transform: translateX(100%); /* Empieza fuera de la pantalla */
+                position: absolute; /* Posición absoluta para superposición */
+                top: 0;
+                left: 0;
+                transition: opacity 0.5s ease, transform 0.5s ease;
+            }
+
+            .course-card.active {
+                opacity: 1; /* Visible */
+                transform: translateX(0); /* En posición */
+                position: relative; /* Cambia a relativo mientras es activo */
+            }
+
+            .course-card.previous {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+
+            .course-card.next {
+                opacity: 0;
+                transform: translateX(100%);
+            }
         }
 
         @media (max-width: 480px) {
@@ -596,7 +648,7 @@
                 <h2 class="section-title">Nuestros Cursos</h2>
                 <p>Ofrecemos una amplia variedad de cursos de idiomas para todos los niveles y necesidades.</p>
                 <div class="courses-grid">
-                    <div class="course-card">
+                    <div class="course-card active"> <!-- Primero activo por defecto -->
                         <div class="course-image">
                             <img src="https://images.unsplash.com/photo-1460518451285-97b6aa326961?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Curso de Inglés">
                         </div>
@@ -775,6 +827,39 @@
                 header.style.padding = '0';
             }
         });
+
+        // --- Lógica del carrusel para móviles ---
+        if (window.innerWidth <= 768) { // Solo aplica en móviles
+            const courseCards = document.querySelectorAll('.course-card');
+            let currentIndex = 0;
+            const totalCards = courseCards.length;
+
+            if (totalCards > 1) { // Asegura que hay más de un card para rotar
+                function showNextCard() {
+                    // Marcar el actual como 'previous' antes de ocultarlo
+                    courseCards[currentIndex].classList.remove('active');
+                    courseCards[currentIndex].classList.add('previous');
+
+                    // Actualizar índice
+                    currentIndex = (currentIndex + 1) % totalCards;
+
+                    // Ocultar el card anterior (previous) si no es el que se va a mostrar
+                    setTimeout(() => {
+                        if (!courseCards[currentIndex].classList.contains('active')) {
+                            courseCards[currentIndex].classList.remove('next', 'previous');
+                        }
+                    }, 500); // Tiempo de la transición
+
+                    // Mostrar el siguiente
+                    courseCards[currentIndex].classList.remove('previous', 'next');
+                    courseCards[currentIndex].classList.add('active');
+                }
+
+                // Iniciar el carrusel automático
+                setInterval(showNextCard, 3000); // 3 segundos
+            }
+        }
     </script>
 </body>
 </html>
+```
